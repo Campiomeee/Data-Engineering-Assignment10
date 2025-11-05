@@ -148,4 +148,6 @@ Merged dataset successfully inserted in PostgreSQL
 
 Data analysis / visualization generated
 
+![dataplots](data/plots/top_domains_hbar.png)
+
 Intermediate files removed
