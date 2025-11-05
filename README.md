@@ -8,6 +8,8 @@ This project demonstrates deploying Apache Airflow in a development environment 
 
 
 ## 📁 Directory Structure
+
+```
 DATA-ENGINEERING-ASSIGNMENT10/
 │
 ├── .devcontainer/ # Development container config
@@ -25,7 +27,7 @@ DATA-ENGINEERING-ASSIGNMENT10/
 ├── airflow.cfg # Airflow configuration
 ├── requirements.txt # Python dependencies
 └── README.md
-
+```
 
 DAG Graph
 
