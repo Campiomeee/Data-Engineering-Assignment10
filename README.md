@@ -41,6 +41,12 @@ Install dependencies
 
 pip install -r requirements.txt
 
+'''
+Faker==37.12.0
+apache-airflow-providers-postgres
+matplotlib==3.10.1
+'''
+
 Initialize Airflow
 
 airflow db init
@@ -52,3 +58,67 @@ airflow scheduler & airflow webserver
 Access Airflow UI: http://localhost:8080
 
 Enable DAG pipeline
+
+
+
+# Python Code For Analysis
+'''python
+
+@task()
+    def analyze_from_pg(conn_id: str, table: str = TARGET_TABLE, schema: str = "week8_demo") -> list[tuple[str, int]]:
+        """Return top company email domains by employee count."""
+        sql = f"""
+            SELECT split_part(company_email, '@', 2) AS domain, COUNT(*) AS n
+            FROM {schema}.{table}
+            WHERE company_email IS NOT NULL AND company_email <> ''
+            GROUP BY 1
+            ORDER BY n DESC
+            LIMIT 10;
+        """
+        hook = PostgresHook(postgres_conn_id=conn_id)
+        with hook.get_conn() as conn, conn.cursor() as cur:
+            cur.execute(sql)
+            rows = cur.fetchall()
+        return rows
+
+    @task()
+    def make_plot(top_domains: list[tuple[str, int]], outdir: str = "/opt/airflow/data/plots") -> str:
+        """
+        Save a simple horizontal bar chart (with value labels) and return its path.
+        Uses only matplotlib; no extra deps.
+        """
+        import os
+        import matplotlib.pyplot as plt
+
+        os.makedirs(outdir, exist_ok=True)
+        if not top_domains:
+            outpath = os.path.join(outdir, "top_domains_hbar.png")
+            plt.figure()
+            plt.text(0.5, 0.5, "No data", ha="center", va="center")
+            plt.savefig(outpath)
+            plt.close()
+            return outpath
+
+    # unpack domains and counts (already sorted desc by your SQL)
+        domains = [d for d, _ in top_domains]
+        counts  = [n for _, n in top_domains]
+
+        plt.figure()
+        bars = plt.barh(domains, counts)          # horizontal bars
+        plt.gca().invert_yaxis()                  # largest at top
+        plt.xlabel("Employee count")
+        plt.title("Top Company Email Domains")
+
+    # add simple value labels at the end of each bar
+        for bar, val in zip(bars, counts):
+            x = bar.get_width()
+            y = bar.get_y() + bar.get_height() / 2
+            plt.text(x, y, f"{val}", va="center", ha="left", fontsize=9)
+
+        plt.tight_layout()
+        outpath = os.path.join(outdir, "top_domains_hbar.png")
+        plt.savefig(outpath)
+        plt.close()
+        return outpath
+
+'''
