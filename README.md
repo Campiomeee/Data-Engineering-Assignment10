@@ -35,34 +35,53 @@ Output screenshot saved as /pics/Pipeline.png
 
 # ▶️Instructions to Run
 
-Start development container
+1. Start development container
 
-Install dependencies
+Create the folders
+```
+mkdir -p .devcontainer data
+
+touch  .devcontainer/docker-compose.yml .devcontainer/.Dockerfile 
+
+cat <<EOF >> .devcontainer/db.env
+POSTGRES_DB=airflow_db
+POSTGRES_USER=vscode
+POSTGRES_PASSWORD=vscode
+EOF
+
+cat <<EOF >> requirements.txt
+Faker==37.12.0
+apache-airflow-providers-postgres
+EOF
+```
+
+2. Install dependencies
 
 pip install -r requirements.txt
 
-'''
+requirements.txt
+```
 Faker==37.12.0
 apache-airflow-providers-postgres
 matplotlib==3.10.1
-'''
+```
 
-Initialize Airflow
+3. Initialize Airflow
 
 airflow db init
 
-Start Airflow
+4. Start Airflow
 
 airflow scheduler & airflow webserver
 
-Access Airflow UI: http://localhost:8080
+5. Access Airflow UI: http://localhost:8080
 
-Enable DAG pipeline
+6. Enable DAG pipeline
 
 
 
-# Python Code For Analysis
-'''python
+### Python Code for Analysis
+```python
 
 @task()
     def analyze_from_pg(conn_id: str, table: str = TARGET_TABLE, schema: str = "week8_demo") -> list[tuple[str, int]]:
@@ -121,4 +140,12 @@ Enable DAG pipeline
         plt.close()
         return outpath
 
-'''
+```
+
+📊 Final Output
+
+Merged dataset successfully inserted in PostgreSQL
+
+Data analysis / visualization generated
+
+Intermediate files removed
